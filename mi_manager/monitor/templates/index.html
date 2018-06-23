@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>爬虫{{ spider_name }}动态监控系统</title>
+    <script src="//cdn.bootcss.com/echarts/3.3.2/echarts.common.js"></script>
+    <script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="main" style="height: 500px; width: 75%; margin: 0 auto">
+    </div>
+<script type="text/javascript">
+
+var STATS_KEYS = {{stats_keys|safe}}
+var data = [{'value': [Date(), '0']}]
+var myChart = echarts.init(document.getElementById('main'));
+    option = {
+    title: {
+        text: ('{{ spider_name }}' === 'None') ? '爬虫信息汇总' : '爬虫-{{ spider_name }}',
+        left:'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            animation: false
+        }
+    },
+    toolbox: {
+        left:'left',
+        feature: {
+            dataZoom: {
+                yAxisIndex: 'none'
+            },
+            saveAsImage: {
+                show:true
+            }
+        }
+    },
+    xAxis: {
+        type: 'time',
+        splitLine:{
+            show: false
+        }
+    },
+    yAxis: {
+        type: 'value',
+        boundaryGap: [0, '100%'],
+        splitLine: {
+            show: false
+        }
+    },
+    series: [
+    {
+        name: 'zxc',
+        type: 'line',
+        data: data
+    }]
+};
+
+myChart.setOption(option);
+
+is_running = true
+function ajax_get(name) {
+    var spider_name = "{{ spider_name }}";
+    var query_name = name;
+    if (spider_name !== "None") {
+        query_name = name + "_" + spider_name;
+    }
+    $.ajax({url:"/ajax?key="+query_name, async: false, success: function(data){
+    $data = {
+            showSymbol: false,
+            hoverAnimation: false,
+            name: chg(name),
+            type:'line',
+            data:eval(data)
+        };
+//    console.log(new Date());
+//    console.log($data);
+//    return $data;
+    series.push($data);
+}, error: function(jqXHR, text, errorThrown){
+    is_running = false;
+    data = jqXHR.responseText;
+    $data = {
+            showSymbol: false,
+            hoverAnimation: false,
+            name:name,
+            type:'line',
+            data:eval(data)
+        };
+    series.push($data);
+}});
+
+}
+
+function chg(str) {
+    switch (str) {
+        case "downloader/request_count":
+            return "请求数";
+        case "downloader/response_count":
+            return "响应数";
+        case "downloader/response_status_count/200":
+            return "正常响应数";
+        case "item_scraped_count":
+            return "收集到的数据包";
+    }
+    return "NULL";
+}
+
+function get_data(){
+    series = [];
+    new_keys = [];
+    for (i=0;i<STATS_KEYS.length;i++){
+        ajax_get(STATS_KEYS[i]);
+        new_keys.push(chg(STATS_KEYS[i]));
+    }
+//    console.log(STATS_KEYS);
+    myChart.setOption({
+        series: series,
+        legend: {
+            data: new_keys,
+            orient:'vertical',
+            left: 'right'
+        }
+    })
+}
+
+var timer = setInterval(function(){
+    get_data();
+    if (!is_running){
+        clearInterval(timer);
+    }
+},{{ timeinterval }});
+</script>
+</body>
+</html>

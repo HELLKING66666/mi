@@ -1,0 +1,102 @@
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="box box-success">
+            <div class="box-header with-border">
+                <h3 class="box-title">即时爬取</h3>
+
+                <div class="box-tools pull-right">
+                </div>
+            </div>
+            <div class="box-body">
+                <form action="" method="post" class="form form-horizontal responsive">
+                    <div class="form-group">
+                        <div class="formControls col-xs-12">
+                        <textarea cols="" rows="24" class="textarea form-control" id="urls"
+                                  placeholder="输入若干URL，每行一个。例如：
+https://www.huxiu.com/article/201904.html
+http://news.ifeng.com/a/20170628/51337919_0.shtml
+
+请注意：
+1. 此功能遵守rebots协议，可能无法获取目标URL中的的信息
+2. 此功能不支持链接发现等爬虫行为，只会返回与您输入的URL等数量的信息。
+3. 请保证URL在国内网络环境下可以访问，无法访问的URL会造成极长的等待时间。
+4. 此功能不对结果数据进行存储，如需收集数据，请创建任务进行爬取。"></textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="start_work()">提交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" style="width: 1280px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">即时爬取：结果</h4>
+            </div>
+            <div class="modal-body">
+                <div id="wait" hidden>
+                    <h3>任务提交成功，正在爬取中，请稍候...</h3>
+                </div>
+
+                <div id="result_table" hidden>
+                    <table class="table table-border table-bg table-bordered" id="myTable">
+                        <thead id="tab_head">
+
+                        </thead>
+                        <tbody id="tab_dat">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" type="text/css" href="plugins/datatables/jquery.dataTables.min.css"/>
+<script type="text/javascript" src="plugins/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="plugins/datatables/dataTables.bootstrap.min.js"></script>
+
+<script type="text/javascript" src="../const.js"></script>
+<script type="text/javascript" src="mycommon.js"></script>
+
+
+<script>
+    function start_work() {
+        $("#myModal1").modal("toggle");
+        $("#result_table").prop("hidden", true);
+        $("#wait").prop("hidden", false);
+        var urls = {urls: $('#urls').val().split('\n')};
+        var POST_URL = POST_URL_PREFIX + "/get_news_from_urls";
+        console.log(POST_URL);
+        $.post(POST_URL, {urls: JSON.stringify(urls)}).success(function (dat) {
+            console.log(dat);
+            $("#wait").prop("hidden", true);
+            $("#result_table").prop("hidden", false);
+            $('#tab_head').empty();
+            $('#tab_dat').empty();
+            for (var i = 0; i < dat.length; ++i) {
+                var str = '<tr>';
+                for (var j = 0; j < dat[i].length; ++j) {
+                    str += '<th>' + dat[i][j] + '</th>';
+                }
+                str += '</tr>';
+                if (i === 0) {
+                    $('#tab_head').append(str);
+                } else {
+                    $('#tab_dat').append(str);
+                }
+            }
+            $(document).ready(function () {
+                $('#myTable').dataTable();
+            });
+        });
+    }
+</script>

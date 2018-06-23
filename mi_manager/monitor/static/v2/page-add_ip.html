@@ -1,0 +1,141 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div class="box box-success">
+            <div class="box-header ui-sortable-handle" style="cursor: move;">
+                <i class="ion ion-clipboard"></i>
+                <h3 class="box-title">代理IP列表</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="box-body pad table-responsive">
+                    <table class="table table-bordered text-center">
+                        <tbody>
+                        <tr>
+                           <td>
+                                <button type="button"
+                                        class="btn btn-block btn-success btn-flat"
+                                        data-toggle="modal" data-target="#myModal2">
+                                    批量导入IP代理
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button"
+                                        class="btn btn-block btn-success btn-flat"
+                                        onclick="bat_delete()">
+                                    清空代理列表
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="list-group todo-list ui-sortable" id="list_tmp">
+                    <li class="list-group-item list-group-item-success">
+                        <span class="text">{0}</span>
+                        <div class="tools">
+                            <i class="fa fa-trash-o" onclick="delete_proxy('{1}')">删除</i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">批量导入IP代理</h4>
+            </div>
+            <div class="modal-body">
+                <form action="" method="post" class="form form-horizontal responsive">
+                    <div class="form-group">
+                        <div class="formControls col-xs-12">
+                        <textarea cols="" rows="24" class="textarea form-control" id="import_dat"
+                                  placeholder="每行输入一个代理IP
+例如：
+http://218.56.132.156:8080
+http://221.217.34.54:9000
+http://58.62.207.53:9999"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="batch_import()">导入</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+
+
+<link rel="stylesheet" type="text/css" href="plugins/datatables/jquery.dataTables.min.css"/>
+<script type="text/javascript" src="plugins/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="plugins/datatables/dataTables.bootstrap.min.js"></script>
+
+<script type="text/javascript" src="../const.js"></script>
+<script type="text/javascript" src="mycommon.js"></script>
+
+<script>
+    var html = $('#list_tmp').html();
+    $('#list_tmp').empty();
+    var GET_URL = POST_URL_PREFIX + "/get_all_proxy";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        for (var i = 0; i < dat.length; ++i) {
+            var ins = html.format(dat[i], dat[i], dat[i]);
+            $('#list_tmp').append(ins);
+        }
+    });
+</script>
+
+<script>
+    function bat_delete() {
+        if (confirm("注意：真的删除全部吗？")) {
+            var GET_URL = POST_URL_PREFIX + "/delte_all_proxy";
+            console.log(GET_URL);
+            $.getJSON(GET_URL).success(function (dat) {
+                console.log(dat);
+                alert("操作成功！");
+                reload_content();
+            });
+        }
+    }
+</script>
+
+<script>
+    function batch_import() {
+        var POST_URL = POST_URL_PREFIX + "/batch_import_proxy";
+        var dat = $('#import_dat').val();
+        console.log(dat);
+        console.log(POST_URL);
+        $.post(POST_URL, {txt: dat}).success(function () {
+            alert("操作成功！");
+            $("#myModal2").modal("toggle");
+            reload_content();
+        });
+    }
+</script>
+
+<script>
+    function delete_proxy(name) {
+        if (confirm("注意：真的删除代理" + name + "?")) {
+            var GET_URL = POST_URL_PREFIX + "/delte_proxy?proxy=" + name;
+            console.log(GET_URL);
+            $.getJSON(GET_URL).success(function (dat) {
+                console.log(dat);
+                alert("操作成功！");
+                reload_content();
+            });
+        }
+    }
+</script>

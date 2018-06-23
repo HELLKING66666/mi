@@ -1,0 +1,224 @@
+<!-- Apply any bg-* class to to the info-box to color it -->
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="box box-success">
+            <div class="box-header with-border">
+                <h3 class="box-title">系统通知</h3>
+
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <!-- /.box-tools -->
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <center>
+                    <p>欢迎来到 Mi 分布式爬虫系统，这里是管理控制中心！</p>
+                    <p id="p_login_time"></p>
+                    <p>您可以访问：<a href="http://www.mengzicheng.cn/wordpress/?p=1171" target="_blank">http://www.mengzicheng.cn/wordpress/?p=1171</a>
+                    获取http代理（不定期更新）</p>
+                </center>
+            </div>
+            <!-- /.box-body -->
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box bg-green">
+            <!--<span class="info-box-icon"><i class="fa  fa-bug"></i></span>-->
+            <span class="info-box-icon"><i class="fa  fa-bug"></i></span>
+            <div class="info-box-content">
+                <h4><strong>精准爬虫数量</strong></h4>
+                <div style="margin-top: 20px"></div>
+                <h5>电商<span id="num_ds"></span>个，新闻<span id="num_xw"></span>个</h5>
+            </div><!-- /.info-box-content -->
+        </div><!-- /.info-box -->
+    </div>
+
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box bg-blue">
+            <span class="info-box-icon"><i class="fa fa-compass"></i></span>
+            <div class="info-box-content">
+                <h4><strong>任务容器控制</strong></h4>
+                <div style="margin-top: 20px"></div>
+                <a target="_blank" href="http://www.mengzicheng.cn/wordpress/?p=1225" style="color: #ffffff;" id="a_info_1"><i class="fa fa-external-link"></i>&nbsp;说明</a>
+                &nbsp; &nbsp;
+                <a target="_blank" href="#" style="color: #ffffff;" id="a_mgr_1"><i class="fa fa-external-link-square"></i>&nbsp;控制台</a>
+
+            </div><!-- /.info-box-content -->
+        </div><!-- /.info-box -->
+    </div>
+
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box bg-red">
+            <span class="info-box-icon"><i class="fa fa-empire"></i></span>
+            <div class="info-box-content">
+                <h4><strong>分布式资源监控</strong></h4>
+                <div style="margin-top: 20px"></div>
+                <a target="_blank" href="http://www.mengzicheng.cn/wordpress/?p=1230" style="color: #ffffff;" id="a_info_2"><i class="fa fa-external-link"></i>&nbsp;说明</a>
+                &nbsp; &nbsp;
+                <a target="_blank" href="#" style="color: #ffffff;" id="a_mgr_2"><i class="fa fa-external-link-square"></i>&nbsp;控制台</a>
+            </div><!-- /.info-box-content -->
+        </div><!-- /.info-box -->
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="box box-success">
+            <div class="box-header with-border">
+                <h3 class="box-title">运行中的任务</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <center>
+                    <div id="main" style="width: 600px; height:410px;"></div>
+                </center>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="box box-success">
+            <div class="box-header with-border">
+                <h3 class="box-title">子任务调度队列 Top10</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <table class="table table-border table-bg table-bordered" id="myTable">
+                    <thead id="tab_head">
+
+                    </thead>
+                    <tbody id="tab_dat">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" type="text/css" href="plugins/datatables/jquery.dataTables.min.css"/>
+<script type="text/javascript" src="plugins/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="plugins/datatables/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/echart/echarts.min.js"></script>
+
+<script type="text/javascript" src="../const.js"></script>
+<script type="text/javascript" src="mycommon.js"></script>
+
+
+<script>
+    option = {
+        title: {
+            text: '运行中的任务',
+            subtext: '比例图',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: []
+        },
+        series: [
+            {
+                name: '比例',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: [],
+                itemStyle: {
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+    var GET_URL = POST_URL_PREFIX + "/get_piechart_of_mission";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        chart_dat = dat;
+        for (var i = 0; i < chart_dat.length; ++i) {
+            option.legend.data.push(chart_dat[i].name);
+            option.series[0].data.push(chart_dat[i]);
+        }
+        var myChart = echarts.init(document.getElementById('main'));
+        myChart.setOption(option);
+    });
+</script>
+
+<script>
+    $('#tab_head').empty();
+    $('#tab_dat').empty();
+    var GET_URL = POST_URL_PREFIX + "/get_topten_task";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        for (var i = 0; i < dat.length; ++i) {
+            var str = '<tr>';
+            for (var j = 0; j < dat[i].length; ++j) {
+                str += '<th>' + dat[i][j] + '</th>';
+            }
+            str += '</tr>';
+            if (i === 0) {
+                $('#tab_head').append(str);
+            } else {
+                $('#tab_dat').append(str);
+            }
+        }
+//        $(document).ready(function () {
+//            $('#myTable').DataTable();
+//        });
+    });
+</script>
+
+<script>
+    var GET_URL = POST_URL_PREFIX + "/get_number_of_accurate";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        console.log(dat["ec"], typeof dat["ec"]);
+        $("#num_ds").html(dat["ec"]);
+        $("#num_xw").html(dat["news"]);
+    });
+</script>
+
+<script>
+    var GET_URL = POST_URL_PREFIX + "/get_marathon_url";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        $("#a_mgr_1").attr("href", dat);
+    });
+</script>
+
+<script>
+    var GET_URL = POST_URL_PREFIX + "/get_mesos_url";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        $("#a_mgr_2").attr("href", dat);
+    });
+</script>
+
+<script>
+    var GET_URL = POST_URL_PREFIX + "/get_last_login_time";
+    console.log(GET_URL);
+    $.get(GET_URL).success(function (dat) {
+        console.log(dat);
+        $("#p_login_time").html(dat);
+    });
+</script>
